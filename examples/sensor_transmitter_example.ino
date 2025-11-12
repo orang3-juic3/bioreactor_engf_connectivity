@@ -1,13 +1,10 @@
 /*
- * Bioreactor Connectivity
- * Arduino sketch for bioreactor monitoring and control
+ * Example: Temperature Sensor Data Transmission
  * 
- * UART Communication Protocol:
- * - Uses Serial1 for Arduino-to-Arduino communication
- * - Message format: <START>DATA<END>
- * - START marker: '<'
- * - END marker: '>'
- * - Maximum message length: 64 bytes
+ * This example demonstrates how to use the UART communication
+ * to send simulated temperature sensor data between two Arduinos.
+ * 
+ * Upload this to the SENDER Arduino
  */
 
 // UART Configuration
@@ -27,32 +24,34 @@ void setup() {
   // Initialize UART communication with another Arduino
   Serial1.begin(UART_BAUD_RATE);
   
-  Serial.println("Bioreactor UART Communication Initialized");
-  Serial.println("Waiting for data...");
+  Serial.println("Temperature Sensor Transmitter Initialized");
 }
 
 void loop() {
-  // Receive data from another Arduino
-  receiveData();
+  // Simulate temperature reading
+  float temperature = 20.0 + random(0, 100) / 10.0; // Random temp between 20-30°C
+  float humidity = 40.0 + random(0, 200) / 10.0;    // Random humidity between 40-60%
   
-  // Process received data
+  // Format sensor data message
+  char sensorData[MAX_MESSAGE_LENGTH];
+  snprintf(sensorData, MAX_MESSAGE_LENGTH, "TEMP:%.1f,HUM:%.1f", temperature, humidity);
+  
+  // Send sensor data
+  sendData(sensorData);
+  
+  // Check for acknowledgments
+  receiveData();
   if (newData) {
     processReceivedData();
     newData = false;
   }
   
-  // Example: Send data periodically (every 5 seconds)
-  static unsigned long lastSendTime = 0;
-  unsigned long currentTime = millis();
-  if (currentTime - lastSendTime >= 5000) {
-    sendData("HEARTBEAT");
-    lastSendTime = currentTime;
-  }
+  // Send data every 2 seconds
+  delay(2000);
 }
 
 /*
  * Receive data from UART with start/end markers
- * Data format: <message>
  */
 void receiveData() {
   static boolean receiveInProgress = false;
@@ -71,7 +70,7 @@ void receiveData() {
         }
       }
       else {
-        receivedChars[index] = '\0'; // Terminate string
+        receivedChars[index] = '\0';
         receiveInProgress = false;
         index = 0;
         newData = true;
@@ -91,24 +90,14 @@ void sendData(const char* message) {
   Serial1.print(message);
   Serial1.print(END_MARKER);
   
-  // Debug output
   Serial.print("Sent: ");
   Serial.println(message);
 }
 
 /*
- * Process received data
- * Override this function to implement custom message handling
+ * Process received acknowledgments
  */
 void processReceivedData() {
-  Serial.print("Received: ");
+  Serial.print("Received ACK: ");
   Serial.println(receivedChars);
-  
-  // Add custom message processing here
-  // Example: Parse commands, sensor data, etc.
-  
-  // Echo back received data (for testing)
-  String response = "ACK:";
-  response += receivedChars;
-  sendData(response.c_str());
 }
