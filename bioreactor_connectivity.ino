@@ -25,7 +25,7 @@ void setup() {
   Serial.begin(9600);
   
   // Initialize UART communication with another Arduino
-  Serial1.begin(UART_BAUD_RATE);
+  Serial1.begin(UART_BAUD_RATE, SERIAL_8N1, 16 , 17);
   
   Serial.println("Bioreactor UART Communication Initialized");
   Serial.println("Waiting for data...");
