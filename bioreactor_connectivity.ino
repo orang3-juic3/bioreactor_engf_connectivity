@@ -1,9 +1,13 @@
+#include <PicoMQTT.h>
+#include <ArduinoJson.h>
+PicoMQTT::Client mqtt("broker.hivemq.com");
+
 void setup() {
   Serial.begin(115200);
   // rxPin = 17 (A3), txPin = 16 (A2)
-  Serial1.begin(115200, SERIAL_8N1, 17, 16);
+  Serial1.begin(115200, SERIAL_8N1, 19, 20);
   delay(100);
-  Serial.println("Started (Serial1 RX=17, TX=16)");
+  Serial.println("Started (Serial1 RX=19, TX=20)");
 }
 
 unsigned long last = 0;
