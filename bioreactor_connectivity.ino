@@ -1,7 +1,14 @@
 #include <WiFi.h>
 #include <PicoMQTT.h>
 #include <ArduinoJson.h>
-#include <cred.h>
+#include "cred.h"
+#include "esp_wpa2.h"
+#if __has_include("esp_wpa2.h")
+    #include "esp_wpa2.h"
+    #define N 1
+#elif __has_include("esp_eap_client.h")
+    #include "esp_eap_client.h"
+#endif
 
 // Make a cred.h file defining the SSID and PASS string macros locally and add to .gitignore
 const char* ssid = SSID;
@@ -25,10 +32,26 @@ void setup() {
     Serial.println("Starting Arduino Nano ESP32 Serial to MQTT");
     
   // rxPin = 17 (A3), txPin = 16 (A2)
-    Serial1.begin(115200, SERIAL_8N1, 19, 20);
+    Serial1.begin(115200, SERIAL_8N1, 19, 18);
     delay(100);
-    Serial.println("Started (Serial1 RX=19, TX=20)");
+    Serial.println("Started (Serial1 RX=19, TX=18)");
     Serial.print("Connecting to WiFi");
+    WiFi.mode(WIFI_STA);
+
+    #ifndef N // arduino nano
+    esp_eap_client_set_identity((uint8_t *)USER, strlen(USER));
+    esp_eap_client_set_username((uint8_t *)USER, strlen(USER));
+    esp_eap_client_set_password((uint8_t *)PASS, strlen(PASS));
+    esp_wifi_sta_enterprise_enable();
+    #else // esp32
+    esp_wifi_sta_wpa2_ent_set_identity((uint8_t *)USER, strlen(USER));
+    esp_wifi_sta_wpa2_ent_set_username((uint8_t *)USER, strlen(USER));
+    esp_wifi_sta_wpa2_ent_set_password((uint8_t *)PASS, strlen(PASS));
+    
+    // Enable WPA2 Enterprise mode
+    esp_wifi_sta_wpa2_ent_enable();
+    #endif
+    WiFi.begin(SSID);
     WiFi.begin(ssid, password);
     
     while (WiFi.status() != WL_CONNECTED) {
@@ -53,9 +76,9 @@ void setup() {
 void loop() {
     // Keep MQTT connection alive
     mqtt.loop();
-    mqtt.publish(mqtt_topic, "{\"window\":{\"start\":1762794759,\"end\":1762794760,\"seconds\":1,\"samples\":11},\"temperature_C\":{\"mean\":30.001115453992462,\"min\":29.946763221075685,\"max\":30.084778361129167},\"pH\":{\"mean\":5.105667377472655,\"min\":5.009077017190612,\"max\":5.18615934437436},\"rpm\":{\"mean\":1000.9577900173852,\"min\":973.4490901597198,\"max\":1020.7836436420446},\"actuators_avg\":{\"heater_pwm\":0.4657603368098872,\"motor_pwm\":0.8494784722549338,\"acid_pwm\":0.004858224462864328,\"base_pwm\":0.0},\"dosing_l\":{\"acid\":6.426360615537362e-05,\"base\":5.513404796702242e-06},\"heater_energy_Wh\":0.018600174251273166,\"photoevents\":35,\"setpoints\":{\"temperature_C\":30.0,\"pH\":5.0,\"rpm\":1000.0},\"faults\":{\"last_active\":[],\"counts\":{}}}", 1);
+    //mqtt.publish(mqtt_topic, "{\"window\":{\"start\":1762794759,\"end\":1762794760,\"seconds\":1,\"samples\":11},\"temperature_C\":{\"mean\":30.001115453992462,\"min\":29.946763221075685,\"max\":30.084778361129167},\"pH\":{\"mean\":5.105667377472655,\"min\":5.009077017190612,\"max\":5.18615934437436},\"rpm\":{\"mean\":1000.9577900173852,\"min\":973.4490901597198,\"max\":1020.7836436420446},\"actuators_avg\":{\"heater_pwm\":0.4657603368098872,\"motor_pwm\":0.8494784722549338,\"acid_pwm\":0.004858224462864328,\"base_pwm\":0.0},\"dosing_l\":{\"acid\":6.426360615537362e-05,\"base\":5.513404796702242e-06},\"heater_energy_Wh\":0.018600174251273166,\"photoevents\":35,\"setpoints\":{\"temperature_C\":30.0,\"pH\":5.0,\"rpm\":1000.0},\"faults\":{\"last_active\":[],\"counts\":{}}}", 1);
 
-    Serial.println("Test message sent!");
+    //Serial.println("Test message sent!");
     
     // Check if data is available on Serial1
     while (Serial1.available() > 0) {
@@ -80,5 +103,5 @@ void loop() {
     }
     
     // Small delay to prevent overwhelming the system
-    delay(1000);
+    delay(10);
 }
