@@ -67,6 +67,8 @@ void setup() {
     // Set MQTT client ID (optional)
     mqtt.client_id = "nano-esp32-serial";
     
+    mqtt.subscribe(mqtt_topic, [](const char * topic, const char * payload) { Serial.printf(payload); });
+
     // Connect to MQTT broker
     Serial. print("Connecting to MQTT broker.. .");
     mqtt.begin();
