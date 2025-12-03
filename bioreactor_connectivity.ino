@@ -67,7 +67,47 @@ void setup() {
     // Set MQTT client ID (optional)
     mqtt.client_id = "nano-esp32-serial";
     
-    mqtt.subscribe(mqtt_topic, [](const char * topic, const char * payload) { Serial.printf(payload); });
+    // Code is super repetitive but we're out of time soz
+    mqtt.subscribe("orang3-juic3nano-esp32/telemetry/data/target/temp", [](const char * payload) {
+      JsonDocument outbound;
+      JsonDocument inbound;
+      DeserializationError error = deserializeJson(inbound, payload);
+      if (error) {
+        Serial.print(F("deserializeJson() failed: "));
+        Serial.println(error.f_str());
+        return;
+      }
+      outbound["subsystem"] = "temp";
+      outbound["target_temp"] = inbound["target_temp"];
+      serializeJson(outbound, Serial1);
+    });
+    mqtt.subscribe("orang3-juic3nano-esp32/telemetry/data/target/pH", [](const char * payload) {
+      JsonDocument outbound;
+      JsonDocument inbound;
+      DeserializationError error = deserializeJson(inbound, payload);
+      if (error) {
+        Serial.print(F("deserializeJson() failed: "));
+        Serial.println(error.f_str());
+        return;
+      }
+      outbound["subsystem"] = "pH";
+      outbound["target_pH"] = inbound["target_pH"];
+      serializeJson(outbound, Serial1);
+
+    });
+    mqtt.subscribe("orang3-juic3nano-esp32/telemetry/data/target/rpm", [](const char * payload) {
+      JsonDocument outbound;
+      JsonDocument inbound;
+      DeserializationError error = deserializeJson(inbound, payload);
+      if (error) {
+        Serial.print(F("deserializeJson() failed: "));
+        Serial.println(error.f_str());
+        return;
+      }
+      outbound["subsystem"] = "rpm";
+      outbound["target_rpm"] = inbound["target_rpm"];
+      serializeJson(outbound, Serial1);
+    });
 
     // Connect to MQTT broker
     Serial. print("Connecting to MQTT broker.. .");
