@@ -32,7 +32,7 @@ void setup() {
     Serial.println("Starting Arduino Nano ESP32 Serial to MQTT");
     
   // rxPin = 17 (A3), txPin = 16 (A2)
-    Serial1.begin(115200, SERIAL_8N1, 19, 18);
+    Serial1.begin(115200, SERIAL_8N1, D8, D9);
     delay(100);
     Serial.println("Started (Serial1 RX=19, TX=18)");
     Serial.print("Connecting to WiFi");
@@ -130,7 +130,6 @@ void loop() {
         Serial.print("Publishing to MQTT: ");
         Serial.println(line);
         mqtt.publish(mqtt_topic, line);
-    }
     }
     
     // Small delay to prevent overwhelming the system
