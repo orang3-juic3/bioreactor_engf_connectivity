@@ -80,6 +80,7 @@ void setup() {
       outbound["subsystem"] = "temp";
       outbound["target_temp"] = inbound["target_temp"];
       serializeJson(outbound, Serial1);
+      Serial1.print("\n");
     });
     mqtt.subscribe("orang3-juic3nano-esp32/telemetry/data/target/pH", [](const char * payload) {
       JsonDocument outbound;
@@ -93,7 +94,7 @@ void setup() {
       outbound["subsystem"] = "pH";
       outbound["target_pH"] = inbound["target_pH"];
       serializeJson(outbound, Serial1);
-
+      Serial1.print("\n");
     });
     mqtt.subscribe("orang3-juic3nano-esp32/telemetry/data/target/rpm", [](const char * payload) {
       JsonDocument outbound;
@@ -107,6 +108,7 @@ void setup() {
       outbound["subsystem"] = "rpm";
       outbound["target_rpm"] = inbound["target_rpm"];
       serializeJson(outbound, Serial1);
+      Serial1.print("\n");
     });
 
     // Connect to MQTT broker
