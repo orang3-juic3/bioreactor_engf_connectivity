@@ -125,25 +125,12 @@ void loop() {
     //Serial.println("Test message sent!");
     
     // Check if data is available on Serial1
-    while (Serial1.available() > 0) {
-        char inChar = Serial1.read();
-        
-        // Check for newline character (end of string)
-        if (inChar == '\n' || inChar == '\r') {
-            if (serialBuffer.length() > 0) {
-                // Publish the received string to MQTT
-                Serial.print("Publishing to MQTT: ");
-                Serial.println(serialBuffer);
-                
-                mqtt.publish(mqtt_topic, serialBuffer);
-                
-                // Clear the buffer for the next string
-                serialBuffer = "";
-            }
-        } else {
-            // Add character to buffer
-            serialBuffer += inChar;
-        }
+    String line = Serial1.readStringUntil('\n');
+    if (line.length() > 0) {
+        Serial.print("Publishing to MQTT: ");
+        Serial.println(line);
+        mqtt.publish(mqtt_topic, line);
+    }
     }
     
     // Small delay to prevent overwhelming the system
